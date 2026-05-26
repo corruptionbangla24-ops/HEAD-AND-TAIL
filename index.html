@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>3D COIN FLIP - HEAD TAIL</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- 🎰 ক্যাসিনো হেডার প্যানেল -->
+    <div class="header">
+        <div class="brand">
+            <div class="name">COIN FLIP</div>
+            <div class="game">HEAD & TAIL</div>
+        </div>
+        <div class="header-right">
+            <button class="sound-btn" id="mute-btn" onclick="toggleMute()">🔊</button>
+            <div class="balance-box">৳ <span id="user-balance">0.00</span></div>
+        </div>
+    </div>
+
+    <!-- 🪙 ৩ডি কোডিং গোল্ডেন কয়েন এরিয়া (ছবি ছাড়া পিউর ক্যাসিনো থিম ভাই ভাই) -->
+    <div class="coin-container-zone">
+        <div class="coin-shadow" id="coin-shadow"></div>
+        <div class="coin3d" id="coin-object">
+            <div class="side-front">HEAD</div>
+            <div class="side-back">TAIL</div>
+        </div>
+    </div>
+
+    <!-- 🎯 বাজি ধরার প্রধান ২টি ঘর (হেড নাকি টেইল) -->
+    <div class="betting-board">
+        <div class="bet-card" id="card-head" onclick="selectTargetSide('head')">
+            <div class="title">HEAD</div>
+            <div class="rate">২ গুণ লাভ</div>
+        </div>
+        
+        <div class="bet-card" id="card-tail" onclick="selectTargetSide('tail')">
+            <div class="title">TAIL</div>
+            <div class="rate">২ গুণ লাভ</div>
+        </div>
+    </div>
+
+    <!-- 🏆 ইন-লাইন লাইভ স্কোরিং মেসেজ বার -->
+    <div class="win-status-container" id="win-status-box">
+        <span id="win-text-msg">আপনার টার্গেট সিলেক্ট করে কয়েন ফ্লিপ করুন ভাই!</span>
+    </div>
+
+    <!-- 🎛️ কন্ট্রোল প্যানেল এরিয়া (৳১ থেকে ৳২০০০ ডাইনামিক বেট স্লট লক ভাই) -->
+    <div class="footer-controls">
+        <div class="quick-bets">
+            <button class="q-btn active-bet" onclick="setQuickBet(10)">৳১০</button>
+            <button class="q-btn" onclick="setQuickBet(50)">৳৫০</button>
+            <button class="q-btn" onclick="setQuickBet(100)">৳১০০</button>
+            <button class="q-btn" onclick="setQuickBet(500)">৳৫০০</button>
+        </div>
+
+        <div class="play-section">
+            <div class="bet-selector">
+                <button class="bet-btn-nav" onclick="adjustBet('minus')">−</button>
+                <div style="text-align: center; width: 60px;">
+                    <div style="font-size: 9px; color: #aaa; font-weight: bold;">BET</div>
+                    <div style="font-size: 15px; font-weight: 900; color: #fff;" id="bet-display">৳১০</div>
+                </div>
+                <button class="bet-btn-nav" onclick="adjustBet('plus')">+</button>
+            </div>
+
+            <button class="play-btn" id="spin-btn" onclick="handleCoinFlip()">FLIP</button>
+
+            <div class="icon-group">
+                <button class="icon-btn" id="auto-btn" onclick="toggleAuto()">🔄</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔌 [উইনগো কালারトレード সিঙ্ক - ইউনিভার্সাল সকেট ইঞ্জিন লাইব্রেরি ভাই] -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlUserId = urlParams.get('userId') || urlParams.get('id') || urlParams.get('username') || "guest_user";
+        const urlWallet = urlParams.get('wallet') || "main";
+        
+        const SERVER_URL = window.location.origin;
+
+        let balance = 0.00;
+        let currentBet = 10;
+        let selectedSide = null; // 'head' or 'tail'
+        let isFlipping = false;
+        let isAuto = false;
+        let isMuted = false;
+        let autoInterval = null;
+
+        if (typeof io !== 'undefined') {
+            const socket = io();
+            socket.on("balanceUpdate", (data) => {
+                if (data && data.username === urlUserId) {
+                    if (window.parent) window.parent.postMessage({ action: "refresh_wallet" }, "*");
+                    fetchLiveBalance();
+                }
+            });
+        }
+
+        async function fetchLiveBalance() {
+            try {
+                const response = await fetch(`${SERVER_URL}/api/coin-balance?userId=${urlUserId}&wallet=${urlWallet}`);
+                const data = await response.json();
+                if (data && data.success) {
+                    balance = parseFloat(data.balance);
+                    document.getElementById("user-balance").innerText = balance.toFixed(2);
+                }
+            } catch (e) { console.error("Balance lag"); }
+        }
+
+        window.onload = () => {
+            if (window.parent) window.parent.postMessage({ action: "refresh_wallet" }, "*");
+            fetchLiveBalance();
+        };
+
+        function selectTargetSide(side) {
+            if (isFlipping) return;
+            selectedSide = side;
+            document.querySelectorAll(".bet-card").forEach(c => c.classList.remove("selected-target"));
+            document.getElementById(`card-${side}`).classList.add("selected-target");
+            playAudio('click');
+        }
+
+        function setQuickBet(val) {
+            if (isFlipping) return;
+            currentBet = val;
+            document.getElementById("bet-display").innerText = `৳${currentBet}`;
+            document.querySelectorAll(".q-btn").forEach(b => b.classList.remove("active-bet"));
+            event.target.classList.add("active-bet");
+            playAudio('click');
+        }
+
+        function adjustBet(action) {
+            if (isFlipping) return;
+            if (action === 'minus' && currentBet > 1) {
+                if (currentBet <= 10) currentBet -= 1;
+                else if (currentBet <= 100) currentBet -= 10;
+                else currentBet -= 50;
+            }
+            if (action === 'plus' && currentBet < 2000) {
+                if (currentBet < 10) currentBet += 1;
+                else if (currentBet < 100) currentBet += 10;
+                else currentBet += 50;
+            }
+            if (currentBet < 1) currentBet = 1;
+            if (currentBet > 2000) currentBet = 2000;
+            
+            document.getElementById("bet-display").innerText = `৳${currentBet}`;
+            playAudio('click');
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            document.getElementById("mute-btn").innerText = isMuted ? "🔇" : "🔊";
+            document.getElementById("mute-btn").classList.toggle("muted-active", isMuted);
+        }
+
+        function toggleAuto() {
+            isAuto = !isAuto;
+            document.getElementById("auto-btn").classList.toggle("active", isAuto);
+            if (isAuto && !isFlipping) handleCoinFlip();
+            playAudio('click');
+        }
+
+                async function handleFlip() {
+            if (isFlipping) return;
+            if (!selectedOption) {
+                alert("🚨 আগে বাজি ধরার যেকোনো ১টি ঘর (HEAD বা TAIL) সিলেক্ট করুন ভাই!");
+                isAuto = false;
+                document.getElementById("auto-btn").classList.remove("active");
+                return;
+            }
+
+            const coin = document.getElementById("coin-3d");
+            const msgBox = document.getElementById("win-status-box");
+            
+            msgBox.className = "win-status-container";
+            document.getElementById("win-text-msg").innerText = "🪙 কয়েন বাতাসে ডিগবাজি খাচ্ছে...";
+
+            isFlipping = true;
+            document.getElementById("spin-btn").disabled = true;
+
+            // 🎵 কয়েন ওড়ার সাথে সাথে spin2.mp3 সাউন্ড ফায়ার লক ভাই ভাই
+            playAudio('spin');
+
+            try {
+                const response = await fetch(`${SERVER_URL}/api/coin-flip`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: urlUserId,
+                        amount: parseFloat(currentBet),
+                        wallet: urlWallet,
+                        prediction: selectedOption
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data && data.success === true) {
+                    balance = parseFloat(data.balance);
+                    if (window.parent) window.parent.postMessage({ action: "refresh_wallet" }, "*");
+                    if (window.top) window.top.postMessage({ action: "refresh_wallet" }, "*");
+
+                    // 🎯 [থ্রিডি ক্যাসিনো ফ্লিপিং এনিমেশন বুস্টার ভাই]: রেজাল্ট অনুযায়ী কয়েন ডাইনামিক এঙ্গেলে চক্কর খাবে ভাই ভাই!
+                    coin.className = "coin"; // রিসেট লুপ
+                    void coin.offsetWidth; // রি-ট্রিগার রিফ্লো ভাই ভাই
+
+                    if (data.result === "HEAD") {
+                        // হেড পড়লে নিখুঁত জোড় চক্কর খেয়ে হেড পিঠে থামবে
+                        coin.style.transform = `rotateY(${currentRotation + 1800}deg)`;
+                        currentRotation += 1800;
+                    } else {
+                        // টেইল পড়লে বিজোড় চক্কর খেয়ে ১৮০ ডিগ্রি উল্টো পিঠে থামবে
+                        coin.style.transform = `rotateY(${currentRotation + 1980}deg)`;
+                        currentRotation += 1980;
+                    }
+
+                    setTimeout(() => {
+                        showFinalResult(data.result, data.winAmount);
+                    }, 2000); // ২ সেকেন্ডের কড়া থ্রিল ফ্লিপিং লুপ ভাই ভাই
+
+                } else {
+                    alert(data.message || "❌ Insufficient Balance! Please Recharge.");
+                    stopFlipState();
+                }
+            } catch (err) {
+                alert("⚠️ সেশন আউট! আবার ফ্লিপ বাটন চাপুন ভাই ভাই।");
+                stopFlipState();
+            }
+        }
+
+        function showFinalResult(resultOutcome, winAmount) {
+            const msgBox = document.getElementById("win-status-box");
+            const textMsg = document.getElementById("win-text-msg");
+
+            if (winAmount > 0) {
+                // 🎵 বাজি জিতে টাকা ডবল হলে win2.mp3 রাজকীয় সাউন্ড ফায়ার লক ভাই!
+                playAudio('win');
+                msgBox.className = "win-status-container win-glow-bar";
+                textMsg.innerText = `🏆 মেগা উইন!! ফলাফল এসেছে: ${resultOutcome} (৳${winAmount})`;
+            } else {
+                msgBox.className = "win-status-container lose-glow-bar";
+                textMsg.innerText = `❌ ফলাফল এসেছে: ${resultOutcome}। এই রাউন্ডে ভাগ্য সহায় হয়নি ভাই!`;
+            }
+
+            document.getElementById("user-balance").innerText = balance.toFixed(2);
+            stopFlipState();
+
+            // অটোপ্লে অটোমেটিক মোড ট্র্যাকিং লক ভাই ভাই
+            if (isAuto) {
+                autoInterval = setTimeout(() => {
+                    if (isAuto) handleFlip();
+                }, 2000);
+            }
+        }
+
+        function stopFlipState() {
+            isFlipping = false;
+            document.getElementById("spin-btn").disabled = false;
+            if (!isAuto && autoInterval) clearTimeout(autoInterval);
+        }
+
+        // 🎯 [আপনার রিকোয়ারমেন্ট অনুযায়ী ৩টি প্রিমিয়াম সাউন্ড ও বাফার গেটওয়ে লক ভাই ভাই]
+        const slotSounds = {
+            click: new Audio('click2.mp3'), // 🚀 click2.mp3
+            spin: new Audio('spin2.mp3'),   // 🚀 spin2.mp3
+            win: new Audio('win2.mp3')      // 🚀 win2.mp3
+        };
+        Object.values(slotSounds).forEach(s => s.load());
+
+        function playAudio(type) { 
+            if (isMuted) return; // 🔇 সাউন্ড অফ থাকলে কোনো অডিও প্লে হবে না ভাই ভাই!
+            try { 
+                slotSounds[type].currentTime = 0; 
+                slotSounds[type].play(); 
+            } catch(e){ console.log("Audio interaction lag"); } 
+        }
+    </script>
+</body>
+</html>
