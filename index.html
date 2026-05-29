@@ -212,25 +212,26 @@
         }
 
         function adjustBet(action) {
-            if (isSpinning) return;
-            if (action === 'minus' && currentBet > 1) {
-                if (currentBet <= 10) currentBet -= 1;
-                else if (currentBet <= 100) currentBet -= 10;
-                else if (currentBet <= 1000) currentBet -= 100;
-                else currentBet -= 500;
-            }
-            if (action === 'plus' && currentBet < 20000) {
-                if (currentBet < 10) currentBet += 1;
-                else if (currentBet < 100) currentBet += 10;
-                else if (currentBet < 1000) currentBet += 100;
-                else currentBet -= 500;
-            }
-            if (currentBet < 1) currentBet = 1;
-            if (currentBet > 20000) currentBet = 20000;
-            
-            document.getElementById("bet-display").innerText = `৳${currentBet}`;
-            playAudio('click');
-        }
+    if (isSpinning) return;
+    if (action === 'minus' && currentBet > 1) {
+        if (currentBet <= 10) currentBet -= 1;
+        else if (currentBet <= 100) currentBet -= 10;
+        else if (currentBet <= 1000) currentBet -= 100;
+        else currentBet -= 500;
+    }
+    if (action === 'plus' && currentBet < 20000) { // 🚀 সর্বোচ্চ ২০০০০ লিমিট লক
+        if (currentBet < 10) currentBet += 1;
+        else if (currentBet < 100) currentBet += 10;
+        else if (currentBet < 1000) currentBet += 100;
+        else currentBet += 500;
+    }
+    if (currentBet < 1) currentBet = 1;
+    if (currentBet > 20000) currentBet = 20000; // 🚀 সর্বোচ্চ ২০০০০ লিমিট লক
+    
+    document.getElementById("bet-display").innerText = `৳${currentBet}`;
+    try { slotSounds.click.play(); } catch(e){}
+}
+
 
                 function toggleMute() {
             isMuted = !isMuted;
