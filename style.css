@@ -1,0 +1,328 @@
+/* 🎰 GLOBAL COIN FLIP CASINO MASTER RESPONSIVE CSS */
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+    user-select: none; 
+    -webkit-user-select: none; 
+}
+
+body { 
+    font-family: 'Segoe UI', Arial, sans-serif; 
+    background: #060913; 
+    color: white; 
+    margin: 0; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: space-between; 
+    height: 100vh; 
+    height: 100dvh; 
+    overflow: hidden; 
+    padding-bottom: env(safe-area-inset-bottom); 
+}
+
+/* ক্যাসিনো হেডার প্যানেল এরিয়া */
+.header { 
+    width: 100%; 
+    padding: 6px 16px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    background: #0e1322; 
+    border-bottom: 2px solid #f1c40f; 
+    box-sizing: border-box; 
+    z-index: 100; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.6); 
+    flex-shrink: 0; 
+}
+
+.brand .name { 
+    color: #f1c40f; 
+    font-weight: 900; 
+    font-size: 17px; 
+    letter-spacing: 1px; 
+}
+
+.brand .game { 
+    color: #00ffcc; 
+    font-weight: bold; 
+    font-size: 10px; 
+}
+
+.header-right { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+}
+
+/* 🔈 সাউন্ড বোতাম স্টাইল ভাই ভাই */
+.sound-btn { 
+    background: #1a2238; 
+    border: 1px solid #1a233d; 
+    color: #fff; 
+    font-size: 14px; 
+    width: 32px; 
+    height: 34px; 
+    border-radius: 50%; 
+    cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    transition: 0.2s; 
+}
+
+.sound-btn.muted-active { 
+    background: #7f1d1d; 
+    border-color: #ea2027; 
+}
+
+.balance-box { 
+    background: linear-gradient(145deg, #10ac84, #1dd1a1); 
+    padding: 4px 12px; 
+    border-radius: 30px; 
+    font-weight: bold; 
+    font-size: 14px; 
+    border: 1px solid #ffffff33; 
+}
+
+/* 🪙 [থ্রিডি গোল্ডেন কয়েন টসিং জোন ফিক্সড লক ভাই ভাই] */
+.coin-zone {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 380px;
+    height: 40%; 
+    margin: auto 0;
+}
+
+.coin-window-frame {
+    width: 160px;
+    height: 160px;
+    perspective: 1000px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.coin-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.5s ease-out;
+}
+
+.coin-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    backface-visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    font-weight: 900;
+    border: 6px dashed #f39c12;
+    box-shadow: 0 0 25px rgba(241, 196, 15, 0.6), inset 0 0 20px rgba(0,0,0,0.5);
+}
+
+.head-face {
+    background: linear-gradient(135deg, #f1c40f, #d35400);
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+}
+
+.tail-face {
+    background: linear-gradient(135deg, #e67e22, #c0392b);
+    color: #fff;
+    transform: rotateY(180deg);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+}
+
+/* 🔄 কয়েন ফ্লিপ বাতাসে অন ফায়ার মোশন এনিমেশন ভাই ভাই */
+.coin-blur-spinning {
+    animation: flipCoinMotion 0.15s infinite linear;
+}
+
+@keyframes flipCoinMotion {
+    0% { transform: rotateY(0deg) scale(1); filter: blur(1px); }
+    50% { transform: rotateY(180deg) scale(1.15); filter: blur(2px); }
+    100% { transform: rotateY(360deg) scale(1); filter: blur(1px); }
+}
+
+/* 🎰 বাজি ধরার প্রধান ২টি নিয়ন কালার বেটিং বোর্ড ঘর ভাই ভাই */
+.betting-board {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    width: 92%;
+    max-width: 360px;
+    gap: 12px;
+    margin-bottom: 5px;
+}
+
+.bet-board-btn {
+    background: #0f1524;
+    border: 2px solid #1a233d;
+    border-radius: 14px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.head-win-btn { border-color: #3498db; }
+.tail-win-btn { border-color: #9b59b6; }
+
+/* বাটন সিলেক্ট করা থাকলে কড়া নিয়ন বর্ডার জ্বলবে ভাই ভাই */
+.active-side-bet {
+    background: #1e1b4b !important;
+    transform: scale(1.03);
+    box-shadow: 0 0 15px #f1c40f, inset 0 0 8px #f1c40f !important;
+    border-color: #f1c40f !important;
+}
+
+.board-label { font-size: 15px; font-weight: bold; color: #fff; }
+.board-odds { font-size: 11px; color: #00ffcc; font-weight: bold; }
+
+/* 🏆 ইন-লাইন লাইভ স্কোরিং মেসেজ বার ভাই ভাই */
+.win-status-container { 
+    width: 92%; 
+    max-width: 360px; 
+    background: #0e1322; 
+    border: 1px solid #1a233d; 
+    padding: 8px; 
+    border-radius: 12px; 
+    text-align: center; 
+    font-weight: bold; 
+    font-size: 12px; 
+    color: #00e6ff; 
+    flex-shrink: 0; 
+    margin-bottom: 8px; 
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5); 
+}
+
+.win-glow-bar { 
+    background: #10ac84 !important; 
+    color: #fff !important; 
+    box-shadow: 0 0 15px #10ac84 !important; 
+    border-color: #fff; 
+}
+
+.lose-glow-bar { 
+    background: #962d2d !important; 
+    color: #fff !important; 
+    box-shadow: 0 0 15px #962d2d !important; 
+    border-color: #fff; 
+}
+
+/* 🎛️ কন্ট্রোল প্যানেল এরিয়া ভাই ভাই */
+.footer-controls { 
+    position: relative; 
+    bottom: 0; 
+    margin-bottom: 45px; 
+    width: 94%; 
+    max-width: 360px; 
+    background: #0e1322; 
+    padding: 8px 10px; 
+    border-radius: 25px; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    gap: 6px; 
+    border: 1px solid #1a233d; 
+    box-shadow: 0 -5px 25px rgba(0,0,0,0.7); 
+    pointer-events: auto; 
+    flex-shrink: 0; 
+}
+
+.play-section { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    width: 100%; 
+    justify-content: space-between; 
+    padding: 0 4px; 
+    box-sizing: border-box; 
+}
+
+.bet-selector { 
+    display: flex; 
+    align-items: center; 
+    background: #060913; 
+    padding: 4px 12px; 
+    border-radius: 20px; 
+    border: 2px solid #1a233d; 
+    flex: 1; 
+    justify-content: space-between; 
+}
+
+.bet-btn-nav { 
+    color: #f1c40f; 
+    border: none; 
+    background: none; 
+    font-size: 18px; 
+    font-weight: bold; 
+    cursor: pointer; 
+    width: 25px; 
+    height: 25px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+}
+
+.play-btn { 
+    background: linear-gradient(180deg, #f1c40f, #f39c12); 
+    color: #000; 
+    padding: 8px 22px; 
+    border-radius: 20px; 
+    font-weight: 900; 
+    font-size: 14px; 
+    cursor: pointer; 
+    border: none; 
+    box-shadow: 0 3px 10px rgba(241,196,15,0.3); 
+    transition: 0.1s; 
+    letter-spacing: 1px; 
+}
+
+.play-btn:active { 
+    transform: translateY(2px); 
+    box-shadow: none; 
+}
+
+.play-btn:disabled { 
+    background: #555 !important; 
+    color: #aaa !important; 
+    box-shadow: none !important; 
+    cursor: not-allowed; 
+}
+
+.icon-group { 
+    display: flex; 
+    gap: 8px; 
+}
+
+.icon-btn { 
+    background: #1a2238; 
+    border: none; 
+    color: #fff; 
+    width: 34px; 
+    height: 34px; 
+    border-radius: 50%; 
+    font-size: 13px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    cursor: pointer; 
+}
+
+.icon-btn.active { 
+    background: #7f1d1d; 
+    color: #f1c40f; 
+    box-shadow: 0 0 8px #f1c40f; 
+}
