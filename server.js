@@ -53,11 +53,10 @@ app.post('/api/coin-flip', async (req, res) => {
     const reqAmount = parseFloat(amount) || 50;
     const userPrediction = prediction || "HEAD"; // HEAD বা TAIL
 
-    // 🔒 [মেগা লিমিট কড়া ফিল্টার]: বাজি ১ টাকার কম বা ২০০০০ টাকার বেশি হলে ডিরেক্ট ব্লক ভাই ভাই!
-    if (reqAmount < 1 || reqAmount > 20000) {
-        return res.json({ success: false, message: "🚨 Invalid Bet Amount (৳১ - ৳Subcontinent)" });
-    }
-
+// 🔒 [বেট সিকিউরিটি ফিল্টার]: বাজি ১ টাকার কম বা ২০০০০ টাকার বেশি হলে ব্যাকএন্ড ডিরেক্ট ব্লক!
+if (reqAmount < 1 || reqAmount > 20000) {
+    return res.json({ success: false, message: "🚨 Invalid Bet Amount (৳১ - ৳২০০০০)" });
+}
     try {
         // 🔒 [ব্যালেন্স যাচাই]: বাজি প্লে করার আগে ডাটাবেজ থেকে রিয়েল টাকা নিশ্চিত করার চাবি
         const balResponse = await axios.post(`${MAIN_SITE_URL}/api_callback.php`, {
